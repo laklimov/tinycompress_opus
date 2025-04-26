@@ -1,3 +1,42 @@
+
+===============================================================================
+OPUS codec support in fcplay:
+
+-- requires liboggz2 library to parse OGG file.
+	The current version in Debian 12 seems to be buggy.
+	This works fine with liboggz2 Version: 1.1.3-1
+	in Debian testing at the time of writing this.
+
+	Can be manually compiled from:
+	https://gitlab.xiph.org/xiph/liboggz.git
+
+-- if liboggz2 is manually installed as-is then fcplay needs LD_LIBRARY_PATH
+	to point to installed liboggz2.
+
+Example of running fcplay:
+
+LD_LIBRARY_PATH=/usr/local/lib ./fcplay -I OPUS -c 0 -d 0 test.opus
+	or
+LD_LIBRARY_PATH=/usr/local/lib ./fcplay -I OPUS -c 0 -d 0 -v test.opus
+
+user@hostname:~$ LD_LIBRARY_PATH=/usr/local/lib fcplay -I OPUS -v -c 0 -d 0 ~/test.opus
+play_samples: entry
+Streams: 1
+StreamType: 1Stream:0 is audio type
+Stream:0  Codec: 86076  Format: 8  Bit Rate: 0  Bits coded: 0  Profile: -99  Codec tag: 0  Channels: 2  Sample rate: 48000  block_align: 0
+Input #0, ogg, from '/path/to/test.opus':
+  Duration: 00:01:30.80, start: 0.000000, bitrate: 350 kb/s
+  Stream #0:0: Audio: opus, 48000 Hz, stereo, fltp
+    Metadata:
+      encoder         : Lavc58.52.101 libopus
+play_samples: Opened compress device
+play_samples: Playing opus file..
+play_opus: run Ogg file parsing to get raw Opus packets..
+compress_start! Audio should start now..
+wrote bytes=525360,needed to write 524288.
+...
+===============================================================================
+
 		README for tinycompress
 		=======================
 		    vkoul@kernel.org
