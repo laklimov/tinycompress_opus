@@ -41,8 +41,9 @@
 #define SND_AUDIOCODEC_BESPOKE ((__u32) 0x0000000E)
 #define SND_AUDIOCODEC_ALAC ((__u32) 0x0000000F)
 #define SND_AUDIOCODEC_APE ((__u32) 0x00000010)
+#define SND_AUDIOCODEC_OPUS ((__u32) 0x00000011)
 
-#define SND_AUDIOCODEC_MAX SND_AUDIOCODEC_APE
+#define SND_AUDIOCODEC_MAX SND_AUDIOCODEC_OPUS
 #define SND_AUDIOPROFILE_PCM ((__u32) 0x00000001)
 
 #define SND_AUDIOCHANMODE_MP3_MONO ((__u32) 0x00000001)
@@ -243,6 +244,21 @@ struct snd_dec_ape {
  __u32 seek_table_present;
 } __attribute__((packed, aligned(4)));
 
+/*RFC document with info on below OPUS initialization variables:
+  https://www.rfc-editor.org/rfc/rfc7845#section-5 */
+struct snd_dec_opus {
+ __u8 version; //Compatible version
+ __u8 num_channels; //Number of channels in OPUS stream
+ __u16 pre_skip; //Number of samples to discard before playback
+ __u32 sample_rate; //Sample rate of stream
+ __u16 output_gain; //Volume gain for decoder
+ __u8 mapping_family; //Defines order and meaning of channels
+ __u8 stream_count; //Number of streams in OPUS stream
+ __u8 coupled_count; //Number of streams configured as stereo
+ __u8 channel_map; //Maps which channel is used for each speaker location
+ __u8 reserved[7]; //Always set to 0
+} __attribute__((packed, aligned(4)));
+
 union snd_codec_options {
  struct snd_enc_wma wma;
  struct snd_enc_vorbis vorbis;
@@ -253,6 +269,7 @@ union snd_codec_options {
  struct snd_dec_wma wma_d;
  struct snd_dec_alac alac_d;
  struct snd_dec_ape ape_d;
+ struct snd_dec_opus opus_d;
 }__attribute__((packed, aligned(4)));
 
 struct snd_codec_desc {
