@@ -41,6 +41,7 @@ AS_IF([test "x$build_fcplay" = "xyes"], [
   PKG_CHECK_MODULES([AVCODEC], [libavcodec >= 3.0.7])
   PKG_CHECK_MODULES([AVFORMAT], [libavformat >= 3.0.7])
   PKG_CHECK_MODULES([AVUTIL], [libavutil >= 3.0.7])
+  PKG_CHECK_MODULES([OGGZ], [oggz >= 1.1.3])
 ])
 
 # Checks for typedefs, structures, and compiler characteristics.
