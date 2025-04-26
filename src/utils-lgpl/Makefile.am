@@ -1,6 +1,6 @@
 bin_PROGRAMS = fcplay
 
-fcplay_SOURCES = fcplay.c
+fcplay_SOURCES = fcplay.c opus.c
 
 fcplay_CFLAGS = -I$(top_srcdir)/include \
 		    $(AVCODEC_CFLAGS) \
@@ -12,4 +12,4 @@ fcplay_LDADD = $(top_builddir)/src/lib/libtinycompress.la \
 		    $(AVCODEC_LIBS) \
 		    $(AVFORMAT_LIBS) \
 		    $(AVUTIL_LIBS) \
-		    $(LIBDRM_LIBS)
+		    $(LIBDRM_LIBS) -loggz

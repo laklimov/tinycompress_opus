@@ -22,6 +22,8 @@
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 
+extern void play_opus(struct compress *compress, char *name, int size_to_start, int verbose);
+
 static int verbose;
 
 static const struct {
@@ -355,6 +357,19 @@ void play_samples(char **files, unsigned int card, unsigned int device,
 	if (gapless)
 		compress_set_gapless_metadata(compress, &mdata);
 
+	if (codec.id == SND_AUDIOCODEC_OPUS) {
+		fprintf(stderr, "%s: Playing opus file..\n", __func__);
+		play_opus(compress, name, size * config.fragments, verbose);
+
+		if (verbose)
+			fprintf(stderr, "%s: Stopping playing..\n", __func__);
+
+		/* issue drain if it is supported */
+		compress_drain(compress);
+		fclose(file);
+		goto opus_exit;
+	}
+
 	/* we will write frag fragment_size and then start */
 	num_read = fread(buffer, 1, size * config.fragments, file);
 	if (num_read > 0) {
@@ -441,6 +456,7 @@ void play_samples(char **files, unsigned int card, unsigned int device,
 		fclose(file);
 	} while (file_idx < file_count);
 
+opus_exit:
 	if (verbose)
 		printf("%s: exit success\n", __func__);
 	/* issue drain if it supports */
