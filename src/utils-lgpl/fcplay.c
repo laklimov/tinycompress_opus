@@ -21,6 +21,7 @@
 #include "tinycompress/tinycompress.h"
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
+#include <libavutil/intreadwrite.h>
 
 extern void play_opus(struct compress *compress, char *name, int size_to_start, int verbose);
 
@@ -268,6 +269,38 @@ static int parse_file(char *file, struct snd_codec *codec)
 					codec->options.flac_d.min_frame_size = 11;
 					codec->options.flac_d.max_frame_size = 8192*4;
 				}
+
+				if (codec->id == SND_AUDIOCODEC_OPUS) {
+					if (stream->codecpar->extradata && stream->codecpar->extradata_size >= 19) {
+						uint8_t *extradata = stream->codecpar->extradata;
+
+						if (strncmp((const char *)extradata, "OpusHead", 8) != 0) {
+							fprintf(stderr, "Invalid Opus header\n");
+							goto exit;
+						}
+
+						codec->options.opus_d.version = extradata[8];
+						codec->options.opus_d.num_channels = extradata[9];
+						codec->options.opus_d.pre_skip = AV_RL16(&extradata[10]); // Little-endian
+						codec->options.opus_d.sample_rate = AV_RL32(&extradata[12]); // Little-endian
+						codec->options.opus_d.output_gain = AV_RL16(&extradata[16]); // Little-endian, Q7.8 format
+						codec->options.opus_d.mapping_family = extradata[18];
+
+						/* Parse channel mapping table if mapping family != 0 */
+						if (codec->options.opus_d.mapping_family != 0 &&
+							stream->codecpar->extradata_size >= 21) {
+
+							codec->options.opus_d.stream_count = extradata[19];
+							codec->options.opus_d.coupled_count = extradata[20];
+						} else {
+							codec->options.opus_d.stream_count = 1;
+						}
+						/* parse_opus_header(codecpar->extradata, codecpar->extradata_size); */
+					} else {
+						fprintf(stderr, "No extradata available for Opus header\n"
+								"or extradata is too small\n");
+					}
+				}
 			}
 
 			if (verbose) {
@@ -281,6 +314,7 @@ static int parse_file(char *file, struct snd_codec *codec)
 				fprintf(stderr, "  Channels: %d", stream->codecpar->ch_layout.nb_channels);
 				fprintf(stderr, "  Sample rate: %d", stream->codecpar->sample_rate);
 				fprintf(stderr, "  block_align: %d", stream->codecpar->block_align);
+
 				if (codec->id == SND_AUDIOCODEC_FLAC) {
 					fprintf(stderr, "  Sample Size %d",  codec->options.flac_d.sample_size);
 					fprintf(stderr, "  Min Block Size  %d",  codec->options.flac_d.min_blk_size);
@@ -289,6 +323,18 @@ static int parse_file(char *file, struct snd_codec *codec)
 					fprintf(stderr, "  Max Frame Size  %d",  codec->options.flac_d.max_frame_size);
 
 				}
+
+				if (codec->id == SND_AUDIOCODEC_OPUS) {
+					fprintf(stderr, "  Version %d", codec->options.opus_d.version);
+					fprintf(stderr, "  Number of Channels %d", codec->options.opus_d.num_channels);
+					fprintf(stderr, "  Pre-skip samples %d", codec->options.opus_d.pre_skip);
+					fprintf(stderr, "  Sample rate %d", codec->options.opus_d.sample_rate);
+					fprintf(stderr, "  Output gain %d", codec->options.opus_d.output_gain);
+					fprintf(stderr, "  Mapping family %d", codec->options.opus_d.mapping_family);
+					fprintf(stderr, "  Stream Count %d", codec->options.opus_d.stream_count);
+					fprintf(stderr, "  Coupled Count %d", codec->options.opus_d.coupled_count);
+				}
+
 				fprintf(stderr, "\n");
 			}
 		}
