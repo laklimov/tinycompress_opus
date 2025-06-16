@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: LGPL-2.1-only
 
-//Copyright (c) 2011-2012, Intel Corporation
-//Copyright (c) 2018-2019, 2025, Linaro Ltd
+//Copyright (c) 2025, Linaro Ltd
 
 #include <stdint.h>
 #include <linux/types.h>
@@ -34,8 +33,6 @@ struct opus_privata_data {
 	uint64_t total_bytes_written;
 };
 
-static int skip; /* TODO: remove this, number of packets to skip */
-
 static int
 read_opus_packet(OGGZ *oggz, oggz_packet *zp, long serialno, void *user_data)
 {
@@ -52,11 +49,6 @@ read_opus_packet(OGGZ *oggz, oggz_packet *zp, long serialno, void *user_data)
 	/* Feeding DSP Opus packets is a time-sensitive thingy,
 	 * hence trying to do here as less as possible.
 	 * If we're not fast enough the compress playback may stuck. */
-	if (skip > 0) {
-		skip--;
-		return 0;
-	}
-
 	buff = malloc(total_len);
 	if (buff == NULL)
 		return -1;
@@ -128,9 +120,6 @@ void play_opus(struct compress *compress, char *name, int size_to_start,
 	/* set the read_opus_packet() to be executed for each Opus packet */
 	oggz_set_read_callback(oggz, -1, read_opus_packet, &priv_data);
 	oggz_run_set_blocksize(oggz, OGGZ_BLOCK_SIZE);
-
-	/* TODO: remove skip, number of packets to skip */
-	skip = 10;
 
 	if (verbose)
 		fprintf(stderr, "%s: run Ogg file parsing to get "
