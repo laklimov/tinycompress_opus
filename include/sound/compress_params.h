@@ -244,19 +244,18 @@ struct snd_dec_ape {
  __u32 seek_table_present;
 } __attribute__((packed, aligned(4)));
 
-/*RFC document with info on below OPUS initialization variables:
-  https://www.rfc-editor.org/rfc/rfc7845#section-5 */
 struct snd_dec_opus {
- __u8 version; //Compatible version
- __u8 num_channels; //Number of channels in OPUS stream
- __u16 pre_skip; //Number of samples to discard before playback
- __u32 sample_rate; //Sample rate of stream
- __u16 output_gain; //Volume gain for decoder
- __u8 mapping_family; //Defines order and meaning of channels
- __u8 stream_count; //Number of streams in OPUS stream
- __u8 coupled_count; //Number of streams configured as stereo
- __u8 channel_map; //Maps which channel is used for each speaker location
- __u8 reserved[7]; //Always set to 0
+ __u8 version;
+ __u8 num_channels;
+ __u16 pre_skip;
+ __u32 sample_rate;
+ __u16 output_gain;
+ __u8 mapping_family;
+ struct snd_dec_opus_ch_map {
+  __u8 stream_count;
+  __u8 coupled_count;
+  __u8 channel_map[8];
+ } chan_map;
 } __attribute__((packed, aligned(4)));
 
 union snd_codec_options {
