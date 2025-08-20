@@ -290,10 +290,12 @@ static int parse_file(char *file, struct snd_codec *codec)
 						if (codec->options.opus_d.mapping_family != 0 &&
 							stream->codecpar->extradata_size >= 21) {
 
-							codec->options.opus_d.stream_count = extradata[19];
-							codec->options.opus_d.coupled_count = extradata[20];
+							codec->options.opus_d.chan_map.stream_count = extradata[19];
+							codec->options.opus_d.chan_map.coupled_count = extradata[20];
+							memcpy(codec->options.opus_d.chan_map.channel_map, &extradata[21],
+							       sizeof(codec->options.opus_d.chan_map.channel_map));
 						} else {
-							codec->options.opus_d.stream_count = 1;
+							codec->options.opus_d.chan_map.stream_count = 1;
 						}
 						/* parse_opus_header(codecpar->extradata, codecpar->extradata_size); */
 					} else {
@@ -331,8 +333,8 @@ static int parse_file(char *file, struct snd_codec *codec)
 					fprintf(stderr, "  Sample rate %d", codec->options.opus_d.sample_rate);
 					fprintf(stderr, "  Output gain %d", codec->options.opus_d.output_gain);
 					fprintf(stderr, "  Mapping family %d", codec->options.opus_d.mapping_family);
-					fprintf(stderr, "  Stream Count %d", codec->options.opus_d.stream_count);
-					fprintf(stderr, "  Coupled Count %d", codec->options.opus_d.coupled_count);
+					fprintf(stderr, "  Stream Count %d", codec->options.opus_d.chan_map.stream_count);
+					fprintf(stderr, "  Coupled Count %d", codec->options.opus_d.chan_map.coupled_count);
 				}
 
 				fprintf(stderr, "\n");
